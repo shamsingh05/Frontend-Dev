@@ -128,4 +128,4 @@ Each lecture topic and assignment is organized into its own folder for easy acce
 
 ### 💬 Acknowledgement
 
-A special thanks to our instructors, **[Instructor Name 1]** and **[Instructor Name 2]**, for their valuable mentorship and practical guidance throughout this course.
+A special thanks to our instructors, **Sahil Kumar** and **SDeepak Prasad**, for their valuable mentorship and practical guidance throughout this course.
