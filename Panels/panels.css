@@ -1,0 +1,92 @@
+*{
+    box-sizing: border-box;
+}
+body{
+    background-color: rgb(74, 65, 65);
+    
+}
+.parent{
+    display: flex;
+    height: 750px;
+    /* width: 5000px; */
+    gap: 10px;
+    padding: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    /* padding: 10px; */
+}
+
+.box1{
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(87, 87, 85);
+    color: white;
+    width: 400px;
+    /* height: 500px; */
+    box-shadow: 5px 10px 20px grey;
+    border-radius: 20px;
+    text-align: center;
+    align-items: center;
+}
+.box2{
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(87, 87, 85);
+    color: white;
+    width: 400px;
+    /* height: 500px; */
+    box-shadow: 5px 10px 20px grey;
+    border-radius: 20px;
+    text-align: center;
+    align-items: center;
+}
+.box3{
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(87, 87, 85);
+    color: white;
+    width: 400px;
+    /* height: 500px; */
+    box-shadow: 5px 10px 20px grey;
+    border-radius: 20px;
+    text-align: center;
+    align-items: center;
+}
+
+img{
+    width: 200px;
+    height: 200px;
+    display: block;
+    border-radius: 100%;
+
+}
+
+.box1:hover{
+    box-shadow: 10px 10px 20px rgb(72, 71, 71);
+    background-color: rgb(56, 58, 58);
+    transition: 0.3s ease-in;
+    transform: translateX(5px);
+}.box2:hover{
+    box-shadow: 10px 10px 20px rgb(97, 105, 33);
+    background-color: gold;
+    transition: 0.3s ease-in;
+    transform: translateX(5px);
+}
+.box3:hover{
+    box-shadow: 10px 10px 20px white;
+    background-color: brown;
+    transition: 0.3s ease-in;
+    transform: translateX(5px);
+}
+
+/* @media(orientation: portrait){
+    body{
+    background-color: blue;
+    }
+} */
+/* @media(min-width:700px){
+    body{
+    background-color: greenyellow;
+    }
+} */

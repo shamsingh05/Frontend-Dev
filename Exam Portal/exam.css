@@ -1,0 +1,133 @@
+
+body {
+    font-family: serif;
+    margin: 0;
+    padding: 10px; 
+    background-color: #f0f0f0; 
+    color: #333;
+}
+
+.portal-main-box {
+    max-width: 1200px;
+    margin: 0 auto;
+    border: 3px solid #000080; 
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden; 
+    background-color: white; 
+}
+
+header {
+    color: white;
+    background-color: #0056b3; 
+    text-align: center;
+    padding: 20px 0;
+}
+header h1 { margin: 0; font-size: 40px; }
+
+.nav-bar-static {
+    background-color: #7bbbff; 
+    color: rgb(34, 0, 255);
+    
+    height: 30px; 
+    
+    display: flex;
+    align-items: center; 
+    justify-content: center; 
+    border-bottom: 1px solid #001eff; 
+    font-size: 0.9em;
+}
+
+.welcome-bar-wrapper {
+    background-color: #1d3841; 
+    height: 25px; 
+    color: white;
+    display: flex;
+    align-items: flex-end; 
+    border-bottom: 2px solid #004085;
+}
+
+.welcome-text-moving {
+    animation: scroll-left 10s linear infinite; 
+    display: inline-block;
+    transform: translateX(100%); 
+}
+
+@keyframes scroll-left {
+    0% {
+        transform: translateX(100%); 
+    }
+    100% {
+        transform: translateX(-100%); 
+    }
+}
+
+
+.container {
+    display: flex; 
+        padding: 0; 
+    background-color: #e0f8e0; 
+}
+
+.main-content {
+    flex: 3; 
+
+    padding: 20px 0 20px 20px; 
+    padding-right: 0; 
+}
+
+.main-content h2 {
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 5px;
+}
+
+.content-box {
+    border: 1px solid #aaa; 
+    padding: 15px;
+    background-color: white; 
+    margin-top: 15px;
+}
+
+.sidebar {
+    flex: 1; 
+    border-left: 1px solid #ccc;
+    padding: 20px 20px 20px 20px; 
+}
+
+.sidebar h2 {
+    color: #333;
+    border-bottom: 1px solid #999; 
+    padding-bottom: 5px;
+}
+
+.team-scroll-container {
+    height: 120px; 
+    overflow: hidden; 
+    position: relative;
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 5px;
+}
+.team-info-moving {
+    position: absolute;
+    width: 90%;
+    animation: scroll-up 10s linear infinite; 
+}
+.team-info-moving p {
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+@keyframes scroll-up {
+    0% { transform: translateY(100%); }
+    100% { transform: translateY(-75%); }
+}
+
+footer {
+    background-color: #0056b3; 
+    color: white;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 0.8em;
+    border-top: 1px solid #004085;
+}
