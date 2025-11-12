@@ -88,6 +88,12 @@ Here is the topic-by-topic breakdown of the course content.
 * Pros and cons of using a framework
 
 ---
+**💎 Lecture 11: JAVASCRIPT**
+* Introduction to **JAVASCRIPT**
+* Studied datatypes, arrays, loops, function
+* Implemented the above using Javascript
+
+---
 
 ### 🗂️ Repository Structure
 
@@ -105,19 +111,21 @@ Each lecture topic and assignment is organized into its own folder for easy acce
 | `08-CSS-Advanced`   | Lecture 8: Pseudo-classes, Transitions, Animations|
 | `09-Responsive-Design`| Lecture 9: Media Queries and Mobile-First       |
 | `10-Bootstrap-Intro`| Lecture 10: Bootstrap Framework                   |
+| `10-Javascript-Intro`| Lecture 11: Introduction to Javascript           |
 | `Assignments`       | All graded assignment submissions                 |
 | `Final-Project`     | The final responsive webpage project              |
 
 ### 🧩 Assignments
 
-| Date     | 🧾 Assignment       | 📝 Description                                    |
-| :------- | :------------------ | :------------------------------------------------ |
-| Oct 09   | HTML Timetable      | Created a class timetable using `<table>`.        |
-| Oct 10   | HTML Elements       | Built a webpage demonstrating block vs. inline.   |
-| Oct 16   | CSS Basics          | Styled a basic blog post with colors and fonts.   |
-| Oct 31   | Box Model & Grid    | Built a calculator layout using CSS Grid.         |
-| Nov 03   | Flexbox             | Created a responsive navigation bar using Flexbox.|
-| Nov 07   | Final Project       | Built a complete, mobile-first responsive website.|
+| Date     | 🧾 Assignment       | 📝 Description                                     |
+| :------- | :------------------ | :------------------------------------------------   |
+| Oct 09   | HTML Timetable      | Created a class timetable using `<table>`.          |
+| Oct 10   | HTML Elements       | Built a webpage demonstrating block vs. inline.     |
+| Oct 16   | CSS Basics          | Styled a basic blog post with colors and fonts.     |
+| Oct 31   | Box Model & Grid    | Built a calculator layout using CSS Grid.           |
+| Nov 03   | Flexbox             | Created a responsive navigation bar using Flexbox.  |
+| Nov 07   | Final Project       | Built a complete, mobile-first responsive website.  |
+| Nov 10   | Questions on JS     | Find if number is even or odd,generate random number|
 
 
 ### 👨‍💻 Author
