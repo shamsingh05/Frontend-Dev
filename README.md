@@ -94,6 +94,21 @@ Here is the topic-by-topic breakdown of the course content.
 * Implemented the above using Javascript
 
 ---
+**💎 Lecture 12: JAVASCRIPT in Action**
+* Scope, Events, Strings, Arrays
+* Color changing card using events
+
+---
+**💎 Lecture 13: DOM, ES6, Fucntions**
+* DOM Manipulation, Arrow Functions, Hoisting
+* Created a counter
+
+---
+**💎 Lecture 14: TypeCasting, Errors, Hoisting**
+* Typecasting in JavaScript, Error Handling, Hoisting and types
+* Created a webpage with a hamburger menu
+
+---
 
 ### 🗂️ Repository Structure
 
