@@ -1,0 +1,767 @@
+// Profile Page JavaScript
+let isEditing = false;
+
+// Initialize profile page
+function initProfile() {
+    checkAuthState();
+    loadUserProfile();
+    reconcileGoalsOwnership();
+    setupEventListeners();
+    loadUserProgress();
+    // Initialize streak calendar and notifications
+    initStreakCalendar();
+    updateNotificationsUI();
+    startStreakSidebarTicker();
+}
+
+// Helper to safely get/set current user
+function getCurrentUser() {
+    return window.currentUser || JSON.parse(localStorage.getItem('skillup_user') || 'null');
+}
+function setCurrentUser(user) {
+    window.currentUser = user;
+    localStorage.setItem('skillup_user', JSON.stringify(user));
+}
+
+// Check authentication state
+function checkAuthState() {
+    const userData = localStorage.getItem('skillup_user');
+    if (userData) {
+        window.currentUser = JSON.parse(userData);
+        updateNavbarForLoggedInUser && updateNavbarForLoggedInUser();
+        updateProfileDisplay();
+    } else {
+        // Redirect to login if not authenticated
+        window.location.href = 'login.html';
+    }
+}
+
+// Provide missing function used in init
+function loadUserProfile() {
+    updateProfileDisplay();
+}
+
+// Logout function
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        window.currentUser = null;
+        localStorage.removeItem('skillup_user');
+        updateNavbarForLoggedOutUser();
+        // Redirect to home page
+        window.location.href = 'index.html';
+    }
+}
+
+// Dropdown functionality
+function toggleDropdown() {
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+    if (dropdownMenu) {
+        dropdownMenu.classList.toggle('show');
+    }
+}
+
+// Close dropdown when clicking outside
+function closeDropdownOnOutsideClick(e) {
+    if (!e.target.closest('.dropdown')) {
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+        if (dropdownMenu && dropdownMenu.classList.contains('show')) {
+            dropdownMenu.classList.remove('show');
+        }
+    }
+}
+
+// Update profile display with user data
+function updateProfileDisplay() {
+    const cu = getCurrentUser();
+    if (cu) {
+        document.getElementById('profile-name').textContent = cu.name || 'Your Name';
+        // Header subtitle should show bio if available; otherwise email
+        const profileData = JSON.parse(localStorage.getItem('skillup_profile') || '{}');
+        const subtitle = (profileData.bio && profileData.bio.trim()) ? profileData.bio.trim() : (cu.email || 'your.email@example.com');
+        const subtitleEl = document.getElementById('profile-email');
+        if (subtitleEl) subtitleEl.textContent = subtitle;
+
+        // Update avatar if available
+        const avatarImg = document.getElementById('profile-avatar-img');
+        if (cu && cu.avatar) {
+            avatarImg.src = cu.avatar;
+        }
+
+        // Load profile data
+        loadProfileData();
+    }
+}
+
+// Load profile data from localStorage
+function loadProfileData() {
+    const profileData = JSON.parse(localStorage.getItem('skillup_profile') || '{}');
+    const cu = getCurrentUser() || {};
+
+    // Personal Information
+    document.getElementById('display-name').textContent = profileData.name || cu.name || 'Your Full Name';
+    document.getElementById('display-email').textContent = profileData.email || cu.email || 'your.email@example.com';
+    document.getElementById('display-phone').textContent = profileData.phone || 'Not provided';
+    document.getElementById('display-location').textContent = profileData.location || 'Not provided';
+    document.getElementById('display-bio').textContent = (profileData.bio !== undefined && profileData.bio !== null) ? profileData.bio : '';
+    document.getElementById('display-website').textContent = profileData.website || 'Not provided';
+
+    // Settings
+    if (profileData.emailNotifications !== undefined) {
+        document.getElementById('email-notifications').checked = profileData.emailNotifications;
+    }
+    if (profileData.profileVisibility) {
+        document.getElementById('profile-visibility').value = profileData.profileVisibility;
+    }
+
+    // Fill edit inputs
+    document.getElementById('edit-name').value = profileData.name || cu.name || '';
+    document.getElementById('edit-email').value = profileData.email || cu.email || '';
+    document.getElementById('edit-phone').value = profileData.phone || '';
+    document.getElementById('edit-location').value = profileData.location || '';
+    document.getElementById('edit-bio').value = profileData.bio || '';
+    document.getElementById('edit-website').value = profileData.website || '';
+}
+
+// Load user progress and stats
+function loadUserProgress() {
+    const cu = getCurrentUser();
+    const goalsData = JSON.parse(localStorage.getItem('skillup_goals') || '[]');
+    const userGoals = cu ? goalsData.filter(goal => goal.userId === cu.id) : [];
+
+    // Calculate stats
+    const totalGoals = userGoals.length;
+    const completedGoals = userGoals.filter(goal => goal.completed).length;
+    const totalXP = userGoals.reduce((sum, goal) => sum + (goal.xp || 0), 0);
+    const level = Math.floor(totalXP / 1000) + 1;
+
+    // Update display
+    document.getElementById('total-goals').textContent = totalGoals;
+    document.getElementById('total-xp').textContent = totalXP;
+    document.getElementById('level').textContent = level;
+    document.getElementById('completed-goals').textContent = completedGoals;
+    document.getElementById('earned-xp').textContent = totalXP;
+    document.getElementById('current-streak').textContent = calculateStreak();
+
+    // Update progress bars
+    const goalsProgress = totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
+    document.getElementById('goals-progress').style.width = goalsProgress + '%';
+
+    const xpProgress = (totalXP % 1000) / 10; // Progress within current level
+    document.getElementById('xp-progress').style.width = xpProgress + '%';
+
+    // Load recent activity
+    loadRecentActivity(userGoals);
+}
+
+// Calculate current streak
+function calculateStreak() {
+    const cu = getCurrentUser();
+    if (!cu || !cu.id) return 0;
+    const map = JSON.parse(localStorage.getItem('skillup_streaks') || '{}');
+    const entry = map[String(cu.id)] || { currentStreak: 0 };
+    return entry.currentStreak || 0;
+}
+
+// Load recent activity
+function loadRecentActivity(goals) {
+    const activityList = document.getElementById('recent-activity');
+
+    if (goals.length === 0) {
+        activityList.innerHTML = `
+            <div class="no-activity">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                <h4>No recent activity</h4>
+                <p>Start setting goals to see your progress here!</p>
+            </div>
+        `;
+        return;
+    }
+
+    const recentGoals = goals
+        .filter(goal => goal.createdAt)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
+
+    activityList.innerHTML = recentGoals.map(goal => `
+        <div class="activity-item">
+            <div class="activity-icon">🎯</div>
+            <div class="activity-content">
+                <h4>Goal Created: ${goal.title}</h4>
+                <p>${new Date(goal.createdAt).toLocaleDateString()}</p>
+                <span class="activity-xp">+${goal.xp || 100} XP</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    // Edit profile button
+    document.getElementById('edit-profile-btn').addEventListener('click', toggleEditMode);
+
+    // Avatar upload
+    document.getElementById('avatar-edit-btn').addEventListener('click', () => {
+        document.getElementById('avatar-input').click();
+    });
+
+    document.getElementById('avatar-input').addEventListener('change', handleAvatarUpload);
+
+    // Settings
+    document.getElementById('change-password-btn').addEventListener('click', openPasswordModal);
+    document.getElementById('two-factor-btn').addEventListener('click', enableTwoFactor);
+    document.getElementById('email-notifications').addEventListener('change', saveNotificationSettings);
+    document.getElementById('profile-visibility').addEventListener('change', saveVisibilitySettings);
+
+    // Password modal
+    document.getElementById('password-form').addEventListener('submit', handlePasswordChange);
+    document.getElementById('password-modal-close').addEventListener('click', closePasswordModal);
+
+    // Logout button in dropdown
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            logout();
+            const dropdown = document.querySelector('.dropdown-menu');
+            if (dropdown) dropdown.classList.remove('show');
+        });
+    }
+
+    // Dropdown toggle
+    const dropdownToggle = document.querySelector('.dropdown-toggle');
+    if (dropdownToggle) {
+        dropdownToggle.addEventListener('click', toggleDropdown);
+    }
+
+    // Notifications toggle inside dropdown
+    const notifToggle = document.getElementById('notifications-toggle');
+    if (notifToggle) {
+        notifToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const panel = document.getElementById('notifications-panel');
+            if (panel) {
+                panel.style.display = panel.style.display === 'none' || panel.style.display === '' ? 'block' : 'none';
+                if (panel.style.display === 'block') markAllNotificationsRead();
+            }
+        });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', closeDropdownOnOutsideClick);
+
+    // Auto-refresh progress and recent activity when goals change in another tab/page
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'skillup_goals') {
+            loadUserProgress();
+        }
+    });
+
+    // Refresh when user returns to the tab or window focus
+    window.addEventListener('focus', () => {
+        loadUserProgress();
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) loadUserProgress();
+    });
+
+    window.addEventListener('goals:updated', () => {
+        loadUserProgress();
+    });
+
+    // Update 2FA button label on load
+    updateTwoFactorButton();
+
+    // Streak month navigation
+    const prev = document.getElementById('streak-prev');
+    const next = document.getElementById('streak-next');
+    if (prev) prev.addEventListener('click', () => shiftStreakMonth(-1));
+    if (next) next.addEventListener('click', () => shiftStreakMonth(1));
+}
+
+function reconcileGoalsOwnership() {
+    const cu = getCurrentUser();
+    if (!cu || !cu.id) return;
+    const key = 'skillup_goals';
+    const all = JSON.parse(localStorage.getItem(key) || '[]');
+    let changed = false;
+    for (const g of all) {
+        if (!g.userId) { g.userId = cu.id; changed = true; }
+    }
+    if (changed) localStorage.setItem(key, JSON.stringify(all));
+}
+
+// ===== Streak Calendar =====
+let streakCurrentMonth = new Date();
+
+function initStreakCalendar() {
+    // Normalize to first day of month
+    streakCurrentMonth.setDate(1);
+    renderStreakCalendar();
+}
+
+function shiftStreakMonth(delta) {
+    streakCurrentMonth.setMonth(streakCurrentMonth.getMonth() + delta);
+    renderStreakCalendar();
+}
+
+function getUserStreakDays() {
+    const cu = getCurrentUser();
+    if (!cu) return new Set();
+    const map = JSON.parse(localStorage.getItem('skillup_streak_days') || '{}');
+    const arr = map[String(cu.id)] || [];
+    return new Set(arr);
+}
+
+function renderStreakCalendar() {
+    const container = document.getElementById('streak-calendar');
+    const label = document.getElementById('streak-month-label');
+    if (!container || !label) return;
+
+    const year = streakCurrentMonth.getFullYear();
+    const month = streakCurrentMonth.getMonth();
+    label.textContent = streakCurrentMonth.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+
+    const firstDay = new Date(year, month, 1);
+    const startWeekday = (firstDay.getDay() + 6) % 7; // make Monday=0
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    const isSameMonth = today.getFullYear() === year && today.getMonth() === month;
+    const streakDays = getUserStreakDays();
+
+    // Build grid: header + days
+    const weekLabels = ['M','T','W','T','F','S','S'];
+    let html = '<div class="streak-week-head">' + weekLabels.map(w=>`<div>${w}</div>`).join('') + '</div>';
+    html += '<div class="streak-days">';
+    for (let i = 0; i < startWeekday; i++) html += '<div class="empty"></div>';
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const dayDate = new Date(year, month, d);
+        let cls = 'neutral';
+        if (streakDays.has(dateStr)) cls = 'hit';
+        else if (dayDate < new Date(today.getFullYear(), today.getMonth(), today.getDate())) cls = 'miss';
+        html += `<div class="streak-day ${cls}"><span>${d}</span></div>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// ===== Streak Sidebar (right panel) =====
+function nextMilestoneTarget(days) {
+    if (days < 7) return 7;
+    if (days < 30) return 30;
+    if (days < 50) return 50;
+    return Math.ceil((days + 10) / 10) * 10; // next round number
+}
+
+function updateStreakSidebar() {
+    const countEl = document.getElementById('streak-side-count');
+    const leftEl = document.getElementById('streak-day-left');
+    const progEl = document.getElementById('streak-side-progress');
+    const labelEl = document.getElementById('streak-next-label');
+    if (!countEl || !leftEl || !progEl || !labelEl) return;
+
+    const days = calculateStreak();
+    countEl.textContent = days;
+
+    // time left today (until midnight)
+    const now = new Date();
+    const end = new Date(now);
+    end.setHours(23,59,59,999);
+    const ms = end - now;
+    const s = Math.max(0, Math.floor(ms/1000));
+    const hh = Math.floor(s/3600);
+    const mm = Math.floor((s%3600)/60);
+    const ss = s%60;
+    leftEl.textContent = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')} left today`;
+
+    // milestone progress
+    const target = nextMilestoneTarget(days);
+    labelEl.textContent = `Day ${target}`;
+    const pct = Math.max(0, Math.min(100, Math.round((days/target)*100)));
+    progEl.style.width = pct + '%';
+}
+
+let __streakSidebarInt;
+function startStreakSidebarTicker() {
+    updateStreakSidebar();
+    if (__streakSidebarInt) clearInterval(__streakSidebarInt);
+    __streakSidebarInt = setInterval(updateStreakSidebar, 1000);
+}
+
+// ===== Notifications in dropdown =====
+function getUserNotifications() {
+    const cu = getCurrentUser();
+    const list = JSON.parse(localStorage.getItem('skillup_notifications') || '[]');
+    return cu ? list.filter(n => n.userId === cu.id) : [];
+}
+
+function updateNotificationsUI() {
+    const listEl = document.getElementById('notifications-list');
+    const badge = document.getElementById('notif-badge');
+    const all = getUserNotifications();
+    const unread = all.filter(n => !n.read);
+    if (badge) {
+        if (unread.length > 0) {
+            badge.textContent = String(unread.length);
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+    if (listEl) {
+        if (all.length === 0) {
+            listEl.innerHTML = '<div class="notification-empty">No notifications</div>';
+        } else {
+            listEl.innerHTML = all
+                .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
+                .map(n => `
+                    <div class="notification-item ${n.read ? '' : 'unread'}">
+                        <div class="notif-text">${n.text}</div>
+                        <div class="notif-time">${new Date(n.createdAt).toLocaleString()}</div>
+                    </div>
+                `).join('');
+        }
+    }
+}
+
+function markAllNotificationsRead() {
+    const cu = getCurrentUser();
+    if (!cu) return;
+    const list = JSON.parse(localStorage.getItem('skillup_notifications') || '[]');
+    let changed = false;
+    list.forEach(n => { if (n.userId === cu.id && !n.read) { n.read = true; changed = true; } });
+    if (changed) localStorage.setItem('skillup_notifications', JSON.stringify(list));
+    updateNotificationsUI();
+}
+
+// Toggle edit mode
+function toggleEditMode() {
+    isEditing = !isEditing;
+
+    if (isEditing) {
+        // Show edit inputs
+        document.querySelectorAll('.info-input').forEach(input => {
+            input.style.display = 'block';
+        });
+        document.querySelectorAll('.info-value').forEach(value => {
+            value.style.display = 'none';
+        });
+
+        document.getElementById('edit-profile-btn').innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            Done Editing
+        `;
+
+        // Show action buttons
+        document.querySelector('.profile-actions').style.display = 'flex';
+    } else {
+        // Hide edit inputs
+        document.querySelectorAll('.info-input').forEach(input => {
+            input.style.display = 'none';
+        });
+        document.querySelectorAll('.info-value').forEach(value => {
+            value.style.display = 'flex';
+        });
+
+        document.getElementById('edit-profile-btn').innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Edit Profile
+        `;
+
+        // Cancel any unsaved changes
+        loadProfileData();
+    }
+}
+
+// Handle avatar upload
+function handleAvatarUpload(e) {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const avatarImg = document.getElementById('profile-avatar-img');
+            avatarImg.src = e.target.result;
+
+            // Save avatar to user data
+            const cu = getCurrentUser() || {};
+            cu.avatar = e.target.result;
+            setCurrentUser(cu);
+
+            // Also persist in skillup_users list
+            const users = JSON.parse(localStorage.getItem('skillup_users') || '[]');
+            const idx = users.findIndex(u => u.id === cu.id);
+            if (idx > -1) {
+                users[idx].avatar = cu.avatar;
+                localStorage.setItem('skillup_users', JSON.stringify(users));
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Save profile changes
+function saveProfile() {
+    const profileData = {
+        name: document.getElementById('edit-name').value,
+        email: document.getElementById('edit-email').value,
+        phone: document.getElementById('edit-phone').value,
+        location: document.getElementById('edit-location').value,
+        bio: document.getElementById('edit-bio').value,
+        website: document.getElementById('edit-website').value,
+        emailNotifications: document.getElementById('email-notifications').checked,
+        profileVisibility: document.getElementById('profile-visibility').value
+    };
+
+    // Update current user data
+    const cu = getCurrentUser() || {};
+    cu.name = profileData.name;
+    cu.email = profileData.email;
+    setCurrentUser(cu);
+
+    // Update in users list
+    const users = JSON.parse(localStorage.getItem('skillup_users') || '[]');
+    const idx = users.findIndex(u => u.id === cu.id);
+    if (idx > -1) {
+        users[idx].name = cu.name;
+        users[idx].email = cu.email;
+        localStorage.setItem('skillup_users', JSON.stringify(users));
+    }
+
+    // Save profile data
+    localStorage.setItem('skillup_profile', JSON.stringify(profileData));
+
+    // Update display
+    updateProfileDisplay();
+    toggleEditMode();
+
+    // Show success message
+    showMessage('Profile updated successfully!', 'success');
+}
+
+// Cancel editing
+function cancelEdit() {
+    loadProfileData();
+    toggleEditMode();
+}
+
+// Delete account
+function deleteAccount() {
+    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+        // Clear all user data
+        localStorage.removeItem('skillup_user');
+        localStorage.removeItem('skillup_profile');
+        localStorage.removeItem('skillup_goals');
+
+        // Redirect to home
+        window.location.href = 'index.html';
+    }
+}
+
+// Open password change modal
+function openPasswordModal() {
+    document.getElementById('password-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+// Close password modal
+function closePasswordModal() {
+    document.getElementById('password-modal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    document.getElementById('password-form').reset();
+    document.getElementById('password-message').innerHTML = '';
+}
+
+// Handle password change
+function handlePasswordChange(e) {
+    e.preventDefault();
+
+    const currentPassword = document.getElementById('current-password').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-new-password').value;
+
+    if (newPassword !== confirmPassword) {
+        showMessage('New passwords do not match', 'error');
+        return;
+    }
+
+    if (newPassword.length < 6) {
+        showMessage('Password must be at least 6 characters long', 'error');
+        return;
+    }
+
+    // In a real app, verify current password with backend
+    // For demo, just update the password (if matches user in list)
+    const cu = getCurrentUser();
+    if (cu) {
+        cu.password = newPassword;
+        setCurrentUser(cu);
+        const users = JSON.parse(localStorage.getItem('skillup_users') || '[]');
+        const idx = users.findIndex(u => u.id === cu.id);
+        if (idx > -1) {
+            users[idx].password = newPassword;
+            localStorage.setItem('skillup_users', JSON.stringify(users));
+        }
+    }
+
+    closePasswordModal();
+    showMessage('Password updated successfully!', 'success');
+}
+
+// Enable two-factor authentication
+function enableTwoFactor() {
+    const cu = getCurrentUser();
+    if (!cu) return;
+    const profileData = JSON.parse(localStorage.getItem('skillup_profile') || '{}');
+    const defEmail = (profileData.email || cu.email || '').trim();
+    const email = (prompt('Enter your email to receive OTP:', defEmail) || '').trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+        showMessage('Invalid or empty email. 2FA setup cancelled.', 'error');
+        return;
+    }
+    startTwoFactorFlow(cu, email);
+}
+
+function updateTwoFactorButton() {
+    const cu = getCurrentUser();
+    const btn = document.getElementById('two-factor-btn');
+    if (!btn || !cu) return;
+    const status = JSON.parse(localStorage.getItem('skillup_2fa_status') || '{}');
+    const entry = status[String(cu.id)];
+    if (entry && entry.enabled) {
+        btn.textContent = 'Enabled';
+        btn.classList.add('secondary');
+    } else {
+        btn.textContent = 'Enable';
+        btn.classList.add('secondary');
+    }
+}
+
+function generateOtp() {
+    return (Math.floor(100000 + Math.random() * 900000)).toString();
+}
+
+async function sendOtpEmail(email, name, code) {
+    try {
+        const cfgRaw = localStorage.getItem('emailjs_config');
+        const cfg = cfgRaw ? JSON.parse(cfgRaw) : null;
+        if (window.emailjs && cfg && cfg.publicKey && cfg.serviceId && cfg.templateId) {
+            if (!window.emailjs.__inited) {
+                window.emailjs.init(cfg.publicKey);
+                window.emailjs.__inited = true;
+            }
+            await window.emailjs.send(cfg.serviceId, cfg.templateId, {
+                to_email: email,
+                user_name: name || email,
+                otp: code
+            });
+            return { sent: true };
+        }
+    } catch (e) {
+        return { sent: false, error: String(e) };
+    }
+    return { sent: false };
+}
+
+async function startTwoFactorFlow(user, email) {
+    const code = generateOtp();
+    const expiresAt = Date.now() + 5 * 60 * 1000;
+    const pending = { userId: user.id, email, code, expiresAt };
+    localStorage.setItem('skillup_2fa_pending', JSON.stringify(pending));
+
+    const res = await sendOtpEmail(email, user.name, code);
+    if (res.sent) {
+        showMessage(`OTP sent to ${email.replace(/(^.).*(@.*$)/, (m,a,b)=>a+'*****'+b)}.`, 'success');
+    } else {
+        showMessage(`OTP (testing): ${code}. Configure EmailJS to send emails.`, 'info');
+    }
+
+    const entered = (prompt('Enter the 6-digit OTP sent to your email:') || '').trim();
+    const latest = JSON.parse(localStorage.getItem('skillup_2fa_pending') || 'null');
+    if (!latest || latest.userId !== user.id) {
+        showMessage('2FA setup cancelled or expired.', 'error');
+        return;
+    }
+    if (Date.now() > latest.expiresAt) {
+        showMessage('OTP expired. Please click Enable again to restart.', 'error');
+        localStorage.removeItem('skillup_2fa_pending');
+        return;
+    }
+    if (entered !== String(latest.code)) {
+        showMessage('Invalid OTP. Please click Enable again to retry.', 'error');
+        return;
+    }
+
+    const status = JSON.parse(localStorage.getItem('skillup_2fa_status') || '{}');
+    status[String(user.id)] = { enabled: true, email, method: 'email', enabledAt: new Date().toISOString() };
+    localStorage.setItem('skillup_2fa_status', JSON.stringify(status));
+    localStorage.removeItem('skillup_2fa_pending');
+    updateTwoFactorButton();
+    showMessage('Two-factor authentication enabled!', 'success');
+}
+
+// Save notification settings
+function saveNotificationSettings() {
+    const profileData = JSON.parse(localStorage.getItem('skillup_profile') || '{}');
+    profileData.emailNotifications = document.getElementById('email-notifications').checked;
+    localStorage.setItem('skillup_profile', JSON.stringify(profileData));
+}
+
+// Save visibility settings
+function saveVisibilitySettings() {
+    const profileData = JSON.parse(localStorage.getItem('skillup_profile') || '{}');
+    profileData.profileVisibility = document.getElementById('profile-visibility').value;
+    localStorage.setItem('skillup_profile', JSON.stringify(profileData));
+}
+
+// Show message
+function showMessage(message, type = 'info') {
+    // Create a temporary message element
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
+    messageDiv.textContent = message;
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+
+    if (type === 'success') {
+        messageDiv.style.background = '#28a745';
+    } else if (type === 'error') {
+        messageDiv.style.background = '#dc3545';
+    } else {
+        messageDiv.style.background = '#007bff';
+    }
+
+    document.body.appendChild(messageDiv);
+
+    // Animate in
+    setTimeout(() => {
+        messageDiv.style.transform = 'translateX(0)';
+    }, 10);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        messageDiv.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(messageDiv);
+        }, 300);
+    }, 3000);
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', initProfile);

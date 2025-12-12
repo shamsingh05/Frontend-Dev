@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set New Goal - SkillUp Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="goals.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">SkillUp</div>
+            <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="features.html">Features</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li class="dropdown">
+                    <a href="profile.html" class="dropdown-toggle">👤 Profile</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Goals Page Content -->
+    <div class="goals-page">
+        <div class="goals-container">
+            <div class="goals-header">
+                <div class="header-top">
+                    <div class="mascot" aria-hidden="true">🤖</div>
+                    <h1 class="title-anim">Set Your Learning Goals</h1>
+                </div>
+                <p class="subtitle-fade">Plan your journey. Set your targets. Earn XP.</p>
+                <div class="glow-progress" aria-label="session progress">
+                    <div class="glow-fill" id="header-progress" style="width:0%"></div>
+                </div>
+                <div class="float-tooltips" id="float-tooltips" aria-hidden="true"></div>
+                <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; justify-content:center;">
+                    <button id="reset-goals-btn" class="btn btn-danger reset-shake" type="button">♻️ Reset My Goals</button>
+                </div>
+            </div>
+
+            <div class="goals-content">
+                <!-- Goals Form Section -->
+                <div class="goals-form-section reveal-up">
+                    <h2>Create New Goal</h2>
+
+                    <div id="goal-message"></div>
+
+                    <form id="goal-form">
+                        <div class="form-group">
+                            <label for="goal-title">Goal Title *</label>
+                            <input type="text" id="goal-title" name="goal-title" placeholder="e.g., Complete 50 LeetCode Problems" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Skill Category *</label>
+                            <div class="goals-categories">
+                                <div class="category-card" data-category="coding">
+                                    <div class="category-icon">💻</div>
+                                    <div>Coding & DSA</div>
+                                </div>
+                                <div class="category-card" data-category="communication">
+                                    <div class="category-icon">🗣️</div>
+                                    <div>Communication</div>
+                                </div>
+                                <div class="category-card" data-category="design">
+                                    <div class="category-icon">🎨</div>
+                                    <div>Design & UX</div>
+                                </div>
+                                <div class="category-card" data-category="finance">
+                                    <div class="category-icon">💰</div>
+                                    <div>Finance</div>
+                                </div>
+                                <div class="category-card" data-category="writing">
+                                    <div class="category-icon">✍️</div>
+                                    <div>Writing</div>
+                                </div>
+                                <div class="category-card" data-category="other">
+                                    <div class="category-icon">🚀</div>
+                                    <div>Other</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="goal-category" name="goal-category" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="goal-description">Description</label>
+                            <textarea id="goal-description" name="goal-description" placeholder="Describe your goal in detail. What do you want to achieve? What are the steps involved?"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Difficulty Level</label>
+                            <div class="difficulty-selector">
+                                <div class="difficulty-option" data-difficulty="easy">
+                                    <div>😊 Easy</div>
+                                    <small>Beginner friendly</small>
+                                </div>
+                                <div class="difficulty-option" data-difficulty="medium">
+                                    <div>💪 Medium</div>
+                                    <small>Moderate challenge</small>
+                                </div>
+                                <div class="difficulty-option" data-difficulty="hard">
+                                    <div>🔥 Hard</div>
+                                    <small>Advanced level</small>
+                                </div>
+                            </div>
+                            <input type="hidden" id="goal-difficulty" name="goal-difficulty" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Frequency</label>
+                            <div class="freq-toggle" role="tablist" aria-label="Goal frequency">
+                                <button type="button" class="pill active" data-frequency="daily" aria-selected="true">Daily</button>
+                                <button type="button" class="pill" data-frequency="weekly" aria-selected="false">Weekly</button>
+                            </div>
+                            <input type="hidden" id="goal-frequency" name="goal-frequency" value="daily">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="goal-duration">Time Limit (minutes)</label>
+                            <input type="number" id="goal-duration" name="goal-duration" min="5" step="5" placeholder="e.g., 25 for 25 minutes">
+                            <small style="display:block;color:#666;margin-top:6px;">Optional. If set, a countdown starts immediately and the goal must be completed within this time.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="goal-deadline">Target Deadline *</label>
+                            <input type="date" id="goal-deadline" name="goal-deadline" required>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="button" class="btn btn-ghost more-options" id="more-options-btn" aria-expanded="false">More Options</button>
+                            <div class="more-panel" id="more-panel" hidden>
+                                <div class="form-group">
+                                    <label>Pick an Emoji</label>
+                                    <div class="emoji-grid" id="emoji-grid" aria-label="Choose an emoji">
+                                        <button type="button" class="emoji" data-emoji="🚀">🚀</button>
+                                        <button type="button" class="emoji" data-emoji="🎯">🎯</button>
+                                        <button type="button" class="emoji" data-emoji="🔥">🔥</button>
+                                        <button type="button" class="emoji" data-emoji="💻">💻</button>
+                                        <button type="button" class="emoji" data-emoji="📚">📚</button>
+                                        <button type="button" class="emoji" data-emoji="🧠">🧠</button>
+                                        <button type="button" class="emoji" data-emoji="🏆">🏆</button>
+                                        <button type="button" class="emoji" data-emoji="⚡">⚡</button>
+                                    </div>
+                                    <input type="hidden" id="goal-emoji" name="goal-emoji" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="goal-notes">Notes (optional)</label>
+                                    <textarea id="goal-notes" name="goal-notes" placeholder="Any extra details or milestones..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Expected XP Reward</label>
+                            <div class="xp-preview">
+                                <div class="xp-amount" id="xp-preview">100 XP</div>
+                                <small>Based on difficulty level</small>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="cancelGoal()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">🚀 Set Goal & Start!</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Goals Preview Section -->
+                <div class="goals-preview-section reveal-up">
+                    <h2>Your Goals Dashboard</h2>
+
+                    <div class="smart-suggestions glass">
+                        <h3>💡 Based on your progress</h3>
+                        <p class="suggest-sub">Here are some quick ideas to auto-fill:</p>
+                        <div class="chips" id="suggestion-chips">
+                            <button type="button" class="chip" data-title="Solve 2 DSA problems" data-category="coding" data-difficulty="medium" data-frequency="daily" data-emoji="💻">💻 2 DSA/day</button>
+                            <button type="button" class="chip" data-title="Read 10 pages" data-category="writing" data-difficulty="easy" data-frequency="daily" data-emoji="📚">📚 Read 10 pages</button>
+                            <button type="button" class="chip" data-title="Practice speaking 10 min" data-category="communication" data-difficulty="medium" data-frequency="weekly" data-emoji="🗣️">🗣️ 10-min speaking</button>
+                        </div>
+                    </div>
+
+                    <div class="stats-overview">
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-goals">0</div>
+                            <div class="stat-label">Total Goals</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="active-goals">0</div>
+                            <div class="stat-label">Active Goals</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-xp">0</div>
+                            <div class="stat-label">Total XP</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card xp-ring-card" aria-label="XP Progress">
+                        <h3 style="margin-bottom:8px; color: var(--text-color); text-align:center;">Level Progress</h3>
+                        <div class="ring" style="--pct:0;">
+                            <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true">
+                                <defs>
+                                    <linearGradient id="xpGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#6a11cb"/>
+                                        <stop offset="100%" stop-color="#2575fc"/>
+                                    </linearGradient>
+                                </defs>
+                                <circle class="bg" cx="60" cy="60" r="52"></circle>
+                                <circle class="fg" id="xp-ring" cx="60" cy="60" r="52" stroke="url(#xpGrad)" stroke-dasharray="326.72" stroke-dashoffset="326.72"></circle>
+                            </svg>
+                        </div>
+                        <div style="text-align:center; margin-top:6px;">
+                            <div class="stat-number" id="xp-percent">0%</div>
+                            <div class="stat-label">to next level</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="margin-bottom: 30px;">
+                        <h3 style="margin-bottom: 10px; color: var(--text-color);">Progress Overview</h3>
+                        <canvas id="goals-chart" width="300" height="160" aria-label="Completed vs Active chart"></canvas>
+                    </div>
+
+                    <div class="recent-goals">
+                        <h3>📋 Active Goals</h3>
+                        <div id="recent-goals-list" class="goal-grid">
+                            <div class="no-goals">
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+                                <h4>No goals set yet!</h4>
+                                <p>Ready to start your learning journey? Create your first goal to see it here.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-tips">
+                        <h3>💡 Pro Tips</h3>
+                        <ul>
+                            <li>🎯 Set SMART goals (Specific, Measurable, Achievable, Relevant, Time-bound)</li>
+                            <li>⚡ Break big goals into smaller milestones</li>
+                            <li>🏆 Choose difficulty based on your current skill level</li>
+                            <li>📅 Set realistic deadlines to stay motivated</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="goals.js"></script>
+</body>
+</html>
