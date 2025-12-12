@@ -1,0 +1,30 @@
+
+
+body{
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: yellowgreen;
+    }
+textarea{
+    width: 100%;
+    height: 120px;
+    padding: 10px;
+    font-size: 16px;
+    resize: none;
+}
+#counter {
+    margin-top: 6px;
+    font-size: 16px;
+    font-weight: bold;
+}
+#counter.yellow {
+    color: goldenrod;
+}
+#counter.red {
+    color: red;
+}
+button {
+    margin-top: 12px;
+    padding: 8px 14px;
+    cursor: pointer;
+}

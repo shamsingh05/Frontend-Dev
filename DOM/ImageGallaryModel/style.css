@@ -1,0 +1,41 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+/* Gallery Grid */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+.gallery img {
+    width: 100%;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: transform 0.2s ease;
+}
+.gallery img:hover {
+    transform: scale(1.05);
+}
+/* Modal */
+#modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+#modal {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 80%;
+    max-height: 80%;
+}
+#modal img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+}

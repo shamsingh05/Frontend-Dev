@@ -1,0 +1,19 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.field {
+    margin-bottom: 12px;
+}
+
+.error {
+    color: red;
+    font-size: 14px;
+    height: 16px;
+}
+
+.success {
+    color: green;
+    margin-top: 20px;
+}

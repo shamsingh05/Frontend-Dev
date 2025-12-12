@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+<body>
+    <h2>MultiStep Form</h2>
+    
+<div id="step1" class="step active">
+    <h3>Step 1: Name</h3>
+    <div class="error" id="err1"></div>
+    <input type="text" id="name" placeholder="Enter your name">
+    <br>
+    <button id="next1">Next</button>
+</div>
+
+<div id="step2" class="step">
+    <h3>Step 2: Email</h3>
+    <div class="error" id="err2"></div>
+    <input type="email" id="email" placeholder="Enter your email">
+    <br>
+    <button id="back2">Back</button>
+    <button id="next2">Next</button>
+</div>
+
+<div id="step3" class="step">
+    <h3>Step 3: Password</h3>
+    <div class="error" id="err3"></div>
+    <input type="password" id="password" placeholder="Enter password (min 6 chars)">
+    <br>
+    <button id="back3">Back</button>
+    <button id="finish">Finish</button>
+</div>
+
+<div id="summary" class="step">
+    <h3>Summary</h3>
+    <p><strong>Name:</strong> <span id="sumName"></span></p>
+    <p><strong>Email:</strong> <span id="sumEmail"></span></p>
+    <p><strong>Password:</strong> <span id="sumPass"></span></p>
+</div>
+    
+
+
+
+
+    <script src="app.js"></script>
+</body>
+</html>

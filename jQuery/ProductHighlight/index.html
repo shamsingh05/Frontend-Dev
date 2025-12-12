@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Product Highlight</title>
+  <style>
+    .highlight { background: yellow; }
+    .selected { color: red; }
+    [data-discount="true"] { border: 2px solid green; }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div class="product" data-stock="out">Laptop</div>
+<div class="product" data-stock="in" data-discount="true">Shoes</div>
+<span class="fav">★</span>
+
+<script src="script.js"></script>
+</body>
+</html>
